@@ -1,19 +1,25 @@
 pipeline{
     agent any
+    options{
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+    environment{
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+    }
     stages{
         stage('Build'){
             steps{
-                echo "This is a build stage"
+                sh 'docker build -t anitch/nitch-webapp .'
             }
         }
-        stage('Test'){
+        stage('Login'){
             steps{
-                echo "This is a test stage"
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin' 
             }
         }
-        stage('Deploy'){
+        stage('Push'){
             steps{
-                echo "This is a deploy stage"
+                sh 'docker push anitch/nitch-webapp'
             }
         }
         stage('Monitor'){
